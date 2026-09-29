@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.inventory.meta.SkullMeta; 
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -24,7 +24,6 @@ public class TradeSession {
     private boolean p2Ready = false;
     private boolean isCompleting = false;
 
-    // Track economy and XP offers
     private double p1MoneyOffer = 0.0;
     private double p2MoneyOffer = 0.0;
     private int p1XpOffer = 0;
@@ -51,7 +50,6 @@ public class TradeSession {
             inventory.setItem(i, separator);
         }
         
-        // Add Player Heads
         inventory.setItem(46, getPlayerHead(p1));
         inventory.setItem(52, getPlayerHead(p2));
         
@@ -174,6 +172,24 @@ public class TradeSession {
         }
     }
 
+    private String formatOffer(double money, int xp, Set<Integer> slots) {
+        StringBuilder sb = new StringBuilder();
+        if (money > 0) sb.append("$").append(String.format("%.2f", money)).append(", ");
+        if (xp > 0) sb.append(xp).append(" XP Levels, ");
+        
+        for (int slot : slots) {
+            ItemStack item = inventory.getItem(slot);
+            if (item != null && item.getType() != Material.AIR) {
+                String itemName = item.hasItemMeta() && item.getItemMeta().hasDisplayName() ? 
+                        ChatColor.stripColor(item.getItemMeta().getDisplayName()) : item.getType().name();
+                sb.append(item.getAmount()).append("x ").append(itemName).append(", ");
+            }
+        }
+        
+        if (sb.length() == 0) return "Nothing";
+        return sb.substring(0, sb.length() - 2); 
+    }
+
     private void completeTrade() {
         if (isCompleting) return;
 
@@ -187,6 +203,11 @@ public class TradeSession {
         }
 
         isCompleting = true;
+
+        // Log to file before clearing inventory
+        String p1Log = formatOffer(p1MoneyOffer, p1XpOffer, P1_SLOTS);
+        String p2Log = formatOffer(p2MoneyOffer, p2XpOffer, P2_SLOTS);
+        plugin.logTrade(p1.getName(), p2.getName(), p1Log, p2Log);
 
         // Process Money
         if (p1MoneyOffer > 0) { plugin.getEconomy().withdrawPlayer(p1, p1MoneyOffer); plugin.getEconomy().depositPlayer(p2, p1MoneyOffer); }

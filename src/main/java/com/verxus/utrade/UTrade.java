@@ -15,18 +15,20 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 public class UTrade extends JavaPlugin implements CommandExecutor {
 
-    // Tracks pending requests: Requester -> Target
     private final Map<UUID, UUID> pendingRequests = new HashMap<>();
-    // Tracks active trade GUI sessions
     private final Map<UUID, TradeSession> activeTrades = new HashMap<>();
-    
-    // The Vault Economy Object
     private Economy econ = null;
 
     @Override
@@ -43,13 +45,9 @@ public class UTrade extends JavaPlugin implements CommandExecutor {
     }
 
     private boolean setupEconomy() {
-        if (getServer().getPluginManager().getPlugin("Vault") == null) {
-            return false;
-        }
+        if (getServer().getPluginManager().getPlugin("Vault") == null) return false;
         RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
-        if (rsp == null) {
-            return false;
-        }
+        if (rsp == null) return false;
         econ = rsp.getProvider();
         return econ != null;
     }
@@ -106,6 +104,7 @@ public class UTrade extends JavaPlugin implements CommandExecutor {
         acceptBtn.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, 
                 new ComponentBuilder("Click to accept trade from " + p.getName())
                 .color(net.md_5.bungee.api.ChatColor.GREEN).create()));
+        
         message.addExtra(acceptBtn);
         target.spigot().sendMessage(message);
 
@@ -118,5 +117,21 @@ public class UTrade extends JavaPlugin implements CommandExecutor {
 
     public TradeSession getTradeSession(UUID uuid) {
         return activeTrades.get(uuid);
+    }
+
+    public void logTrade(String p1Name, String p2Name, String p1Offer, String p2Offer) {
+        File dataFolder = getDataFolder();
+        if (!dataFolder.exists()) dataFolder.mkdir();
+        
+        File logFile = new File(dataFolder, "trades.log");
+        try (PrintWriter out = new PrintWriter(new FileWriter(logFile, true))) {
+            String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+            out.println("[" + timestamp + "] TRADE COMPLETED:");
+            out.println("  " + p1Name + " gave: " + p1Offer);
+            out.println("  " + p2Name + " gave: " + p2Offer);
+            out.println("--------------------------------------------------");
+        } catch (IOException e) {
+            getLogger().warning("Failed to write to trades.log!");
+        }
     }
 }
