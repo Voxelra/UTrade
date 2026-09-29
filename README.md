@@ -13,6 +13,7 @@ UTrade provides a way for players to safely exchange items, economy money, and e
 - Anti-Scam Protection: If either player adds, removes, or shifts an item while the other player is "Ready", both players are immediately un-readied.
 - Interactive Chat Invites: Uses the native 1.12.2 chat API to send clickable [ACCEPT] button.
 - Safe Aborts: If a player crashes, logs out, or closes the window mid-trade, all items are instantly and safely returned to their owners.
+- Logging: If a player completes a trade, it gets logged on a file to review all trades.
 
 # Requirements
 - Server Version: Paper / Spigot 1.12.2
