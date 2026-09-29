@@ -1,0 +1,8 @@
+name: UTrade
+version: 1.0
+main: com.verxus.utrade.UTrade
+depend: [Vault]
+commands:
+  trade:
+    description: Open a trade or send a request.
+    usage: /trade <player> OR /trade accept
